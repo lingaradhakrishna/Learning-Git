@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraCalc - Premium Scientific Calculator</title>
+  <meta name="description" content="A gorgeous, premium scientific calculator featuring glassmorphism design, smooth transitions, comprehensive history, scientific operations, and responsive controls.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Styling Variables & Theme Definitions */
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 50%, #161233, #0a0718);
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-shadow: rgba(0, 0, 0, 0.4);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --text-muted: rgba(255, 255, 255, 0.35);
+      
+      --btn-number-bg: rgba(255, 255, 255, 0.05);
+      --btn-number-hover: rgba(255, 255, 255, 0.1);
+      --btn-number-active: rgba(255, 255, 255, 0.15);
+      
+      --btn-op-bg: rgba(99, 102, 241, 0.15);
+      --btn-op-hover: rgba(99, 102, 241, 0.25);
+      --btn-op-active: rgba(99, 102, 241, 0.35);
+      --btn-op-text: #818cf8;
+      
+      --btn-sci-bg: rgba(236, 72, 153, 0.1);
+      --btn-sci-hover: rgba(236, 72, 153, 0.2);
+      --btn-sci-active: rgba(236, 72, 153, 0.3);
+      --btn-sci-text: #f472b6;
+      
+      --btn-equal-bg: linear-gradient(135deg, #6366f1, #ec4899);
+      --btn-equal-hover: linear-gradient(135deg, #4f46e5, #db2777);
+      --btn-equal-text: #ffffff;
+      
+      --accent-color: #6366f1;
+      --panel-bg: rgba(15, 12, 30, 0.95);
+      --panel-border: rgba(255, 255, 255, 0.1);
+    }
+    
+    [data-theme="light"] {
+      --bg-gradient: linear-gradient(135deg, #eef2f6, #e3e9f3);
+      --glass-bg: rgba(255, 255, 255, 0.65);
+      --glass-border: rgba(0, 0, 0, 0.06);
+      --glass-shadow: rgba(31, 38, 135, 0.08);
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      
+      --btn-number-bg: rgba(0, 0, 0, 0.03);
+      --btn-number-hover: rgba(0, 0, 0, 0.06);
+      --btn-number-active: rgba(0, 0, 0, 0.1);
+      
+      --btn-op-bg: rgba(99, 102, 241, 0.08);
+      --btn-op-hover: rgba(99, 102, 241, 0.18);
+      --btn-op-active: rgba(99, 102, 241, 0.25);
+      --btn-op-text: #4f46e5;
+      
+      --btn-sci-bg: rgba(236, 72, 153, 0.06);
+      --btn-sci-hover: rgba(236, 72, 153, 0.15);
+      --btn-sci-active: rgba(236, 72, 153, 0.22);
+      --btn-sci-text: #db2777;
+      
+      --btn-equal-bg: linear-gradient(135deg, #6366f1, #ec4899);
+      --btn-equal-hover: linear-gradient(135deg, #4f46e5, #db2777);
+      --btn-equal-text: #ffffff;
+      
+      --accent-color: #4f46e5;
+      --panel-bg: rgba(255, 255, 255, 0.98);
+      --panel-border: rgba(0, 0, 0, 0.08);
+    }
+
+    /* Core Styles */
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-gradient);
+      overflow: hidden;
+      transition: background 0.4s ease;
+      position: relative;
+    }
+
+    /* Ambient Background Blobs */
+    .blob {
+      position: absolute;
+      width: 550px;
+      height: 550px;
+      border-radius: 50%;
+      filter: blur(140px);
+      z-index: 0;
+      opacity: 0.45;
+      pointer-events: none;
+      animation: float 25s infinite alternate ease-in-out;
+      transition: opacity 0.5s ease;
+    }
+    
+    [data-theme="light"] .blob {
+      opacity: 0.2;
+    }
+    
+    .blob-1 {
+      background: radial-gradient(circle, #6366f1, #312e81);
+      top: -15%;
+      left: -15%;
+    }
+    
+    .blob-2 {
+      background: radial-gradient(circle, #ec4899, #831843);
+      bottom: -15%;
+      right: -15%;
+      animation-delay: -12s;
+    }
+    
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(60px, 90px) scale(1.15); }
+      100% { transform: translate(-40px, -60px) scale(0.9); }
+    }
+
+    /* Calculator Main Container */
+    .calc-container {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      z-index: 10;
+      max-width: 95%;
+      position: relative;
+      transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    /* Calculator Main Card */
+    .calc-card {
+      width: 360px;
+      height: 590px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 28px;
+      box-shadow: 0 24px 60px var(--glass-shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 2;
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    /* Drawers (Scientific & History) */
+    .drawer {
+      width: 280px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 28px;
+      box-shadow: 0 24px 60px var(--glass-shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1;
+      z-index: 1;
+    }
+    
+    .scientific-drawer:not(.collapsed) {
+      margin-right: 16px;
+    }
+    
+    .history-drawer:not(.collapsed) {
+      margin-left: 16px;
+    }
+
+    .drawer.collapsed {
+      width: 0;
+      opacity: 0;
+      border-left-width: 0;
+      border-right-width: 0;
+      padding-left: 0;
+      padding-right: 0;
+      margin-left: 0;
+      margin-right: 0;
+      pointer-events: none;
+    }
+    
+    .drawer-inner {
+      width: 280px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    /* Header Section */
+    .calc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px 12px;
+    }
+    
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      background: linear-gradient(135deg, var(--accent-color), #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    
+    .icon-btn:hover {
+      background: var(--btn-number-hover);
+      color: var(--text-primary);
+    }
+    
+    .icon-btn.active {
+      background: var(--btn-op-bg);
+      color: var(--accent-color);
+    }
+
+    /* Display Area */
+    .calc-display {
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-end;
+      height: 140px;
+      position: relative;
+      border-bottom: 1px solid var(--glass-border);
+      box-sizing: border-box;
+    }
+    
+    .angle-mode-indicator {
+      position: absolute;
+      top: 14px;
+      left: 24px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-color);
+      background: var(--btn-op-bg);
+      padding: 2px 8px;
+      border-radius: 20px;
+      opacity: 0.6;
+      transition: all 0.3s ease;
+    }
+    
+    .display-expr {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      min-height: 24px;
+      word-break: break-all;
+      text-align: right;
+      max-width: 100%;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+      margin-bottom: 6px;
+    }
+    
+    .display-expr::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .display-main {
+      font-size: 3.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      max-width: 100%;
+      white-space: nowrap;
+      transition: font-size 0.15s ease, color 0.2s ease;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .display-main.preview {
+      color: var(--text-muted);
+    }
+    
+    .display-main.error-flash {
+      animation: flash-red 0.5s ease;
+    }
+    
+    @keyframes flash-red {
+      0%, 100% { color: var(--text-primary); }
+      50% { color: #f87171; }
+    }
+
+    /* Grids (Main & Scientific) */
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 12px;
+      padding: 20px 24px 24px;
+      flex: 1;
+    }
+    
+    .scientific-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 10px;
+      padding: 16px 20px 20px;
+      flex: 1;
+    }
+
+    /* Drawer Header & Elements */
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 20px 12px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    
+    .drawer-header h3 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .close-btn {
+      display: none; /* Shown on mobile */
+    }
+
+    /* Buttons Styling */
+    .btn {
+      border: none;
+      outline: none;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      background: var(--btn-number-bg);
+      border-radius: 18px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn:hover {
+      background: var(--btn-number-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn:active {
+      background: var(--btn-number-active);
+      transform: translateY(1px) scale(0.97);
+      box-shadow: none;
+    }
+    
+    .btn-op {
+      background: var(--btn-op-bg);
+      color: var(--btn-op-text);
+      font-size: 1.45rem;
+      font-weight: 600;
+    }
+    
+    .btn-op:hover {
+      background: var(--btn-op-hover);
+      box-shadow: 0 6px 15px rgba(99, 102, 241, 0.22);
+    }
+    
+    .btn-sci {
+      background: var(--btn-sci-bg);
+      color: var(--btn-sci-text);
+      font-size: 1.05rem;
+      font-weight: 500;
+      border-radius: 14px;
+    }
+    
+    .btn-sci:hover {
+      background: var(--btn-sci-hover);
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.18);
+    }
+    
+    .btn-sci.active {
+      background: var(--btn-sci-text);
+      color: #ffffff !important;
+    }
+    
+    .btn-equal {
+      background: var(--btn-equal-bg);
+      color: var(--btn-equal-text);
+      font-size: 1.6rem;
+      font-weight: 600;
+      box-shadow: 0 6px 20px rgba(236, 72, 153, 0.35);
+    }
+    
+    .btn-equal:hover {
+      background: var(--btn-equal-hover);
+      box-shadow: 0 8px 25px rgba(236, 72, 153, 0.5);
+    }
+    
+    .btn-equal:active {
+      transform: translateY(1px) scale(0.97);
+      box-shadow: 0 3px 10px rgba(236, 72, 153, 0.25);
+    }
+
+    /* History List Styling */
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--glass-border) transparent;
+    }
+    
+    .history-list::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .history-list::-webkit-scrollbar-thumb {
+      background: var(--glass-border);
+      border-radius: 4px;
+    }
+    
+    .history-item {
+      position: relative;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    [data-theme="light"] .history-item {
+      background: rgba(0, 0, 0, 0.01);
+    }
+    
+    .history-item:hover {
+      background: var(--btn-number-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    .history-item-expr {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      word-break: break-all;
+      margin-bottom: 6px;
+      padding-right: 24px;
+      font-weight: 400;
+    }
+    
+    .history-item-res {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      word-break: break-all;
+    }
+    
+    .delete-item-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    
+    .history-item:hover .delete-item-btn {
+      opacity: 1;
+    }
+    
+    .delete-item-btn:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+    
+    .history-footer {
+      padding: 16px;
+      border-top: 1px solid var(--glass-border);
+    }
+    
+    .clear-history-btn {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      color: var(--text-secondary);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    
+    .clear-history-btn:hover {
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+    
+    .empty-history {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      gap: 10px;
+      font-size: 0.95rem;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .empty-history p {
+      margin: 0;
+    }
+
+    /* Custom superscripts and subtext */
+    sup {
+      font-size: 0.7em;
+    }
+
+    /* Responsive Mobile Layouts */
+    @media (max-width: 900px) {
+      .calc-container {
+        width: 360px;
+        position: relative;
+        height: 590px;
+      }
+      
+      .drawer {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        z-index: 10;
+        height: 100%;
+        width: 360px; /* Fill full width on mobile */
+      }
+      
+      .drawer-inner {
+        width: 360px;
+      }
+      
+      .scientific-drawer {
+        left: 0;
+        transform: translateX(0);
+      }
+      
+      .scientific-drawer.collapsed {
+        transform: translateX(-100%);
+        width: 360px;
+        opacity: 0;
+      }
+      
+      .history-drawer {
+        right: 0;
+        transform: translateX(0);
+      }
+      
+      .history-drawer.collapsed {
+        transform: translateX(100%);
+        width: 360px;
+        opacity: 0;
+      }
+      
+      .close-btn {
+        display: flex;
+      }
+      
+      .scientific-drawer:not(.collapsed),
+      .history-drawer:not(.collapsed) {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Glowing Elements -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <!-- Calculator Dashboard -->
+  <div class="calc-container">
+    
+    <!-- Left Panel: Scientific Calculations -->
+    <div class="drawer scientific-drawer collapsed" id="scientific-drawer">
+      <div class="drawer-inner">
+        <div class="drawer-header">
+          <h3>Scientific</h3>
+          <button class="icon-btn close-btn" onclick="toggleScientific()" aria-label="Close panel">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="scientific-grid">
+          <button class="btn btn-sci" onclick="toggleAngleMode()" id="angle-mode-btn">DEG</button>
+          <button class="btn btn-sci" onclick="toggleInverse()" id="inv-btn">INV</button>
+          <button class="btn btn-sci" onclick="appendValue('(')">(</button>
+          <button class="btn btn-sci" onclick="appendValue(')')">)</button>
+          
+          <button class="btn btn-sci sci-func" data-val="sin(" data-inv-val="asin(" data-normal-label="sin" data-inv-label="sin&sup1;" onclick="handleSciFunc(this)">sin</button>
+          <button class="btn btn-sci sci-func" data-val="cos(" data-inv-val="acos(" data-normal-label="cos" data-inv-label="cos&sup1;" onclick="handleSciFunc(this)">cos</button>
+          <button class="btn btn-sci sci-func" data-val="tan(" data-inv-val="atan(" data-normal-label="tan" data-inv-label="tan&sup1;" onclick="handleSciFunc(this)">tan</button>
+          <button class="btn btn-sci sci-func" data-val="^" data-inv-val="^2" data-normal-label="x<sup>y</sup>" data-inv-label="x&sup2;" onclick="handleSciFunc(this)">x<sup>y</sup></button>
+          
+          <button class="btn btn-sci sci-func" data-val="ln(" data-inv-val="e^(" data-normal-label="ln" data-inv-label="e<sup>x</sup>" onclick="handleSciFunc(this)">ln</button>
+          <button class="btn btn-sci sci-func" data-val="log(" data-inv-val="10^(" data-normal-label="log" data-inv-label="10<sup>x</sup>" onclick="handleSciFunc(this)">log</button>
+          <button class="btn btn-sci sci-func" data-val="sqrt(" data-inv-val="^2" data-normal-label="&radic;" data-inv-label="x&sup2;" onclick="handleSciFunc(this)">&radic;</button>
+          <button class="btn btn-sci" onclick="appendValue('&pi;')">&pi;</button>
+          
+          <button class="btn btn-sci" onclick="appendValue('e')">e</button>
+          <button class="btn btn-sci sci-func" data-val="fact(" data-inv-val="fact(" data-normal-label="x!" data-inv-label="x!" onclick="handleSciFunc(this)">x!</button>
+          <button class="btn btn-sci" onclick="appendValue('1&divide;(')">1/x</button>
+          <button class="btn btn-sci" onclick="appendValue('rand()')">rand</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Main Responsive Calculator Card -->
+    <div class="calc-card">
+      <div class="calc-header">
+        <div class="logo">AuraCalc</div>
+        <div class="header-actions">
+          <button class="icon-btn" onclick="toggleScientific()" id="sci-toggle" title="Scientific Mode">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19L20 5M4 5l16 14"/>
+              <circle cx="6" cy="6" r="1.5" fill="currentColor"/>
+              <circle cx="18" cy="18" r="1.5" fill="currentColor"/>
+            </svg>
+          </button>
+          <button class="icon-btn" onclick="toggleHistory()" id="history-toggle" title="Calculation History">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </button>
+          <button class="icon-btn" onclick="toggleTheme()" id="theme-toggle" title="Toggle Theme">
+            <svg id="theme-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="calc-display">
+        <div class="angle-mode-indicator" id="angle-indicator">DEG</div>
+        <div class="display-expr" id="display-expr"></div>
+        <div class="display-main" id="display-main">0</div>
+      </div>
+
+      <div class="calc-grid">
+        <button class="btn btn-op" onclick="clearAll()">AC</button>
+        <button class="btn btn-op" onclick="backspace()" aria-label="Backspace">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM18 9l-6 6M12 9l6 6"/>
+          </svg>
+        </button>
+        <button class="btn btn-op" onclick="appendValue('%')">%</button>
+        <button class="btn btn-op" onclick="appendOperator('&divide;')">&divide;</button>
+
+        <button class="btn" onclick="appendValue('7')">7</button>
+        <button class="btn" onclick="appendValue('8')">8</button>
+        <button class="btn" onclick="appendValue('9')">9</button>
+        <button class="btn btn-op" onclick="appendOperator('&times;')">&times;</button>
+
+        <button class="btn" onclick="appendValue('4')">4</button>
+        <button class="btn" onclick="appendValue('5')">5</button>
+        <button class="btn" onclick="appendValue('6')">6</button>
+        <button class="btn btn-op" onclick="appendOperator('-')">-</button>
+
+        <button class="btn" onclick="appendValue('1')">1</button>
+        <button class="btn" onclick="appendValue('2')">2</button>
+        <button class="btn" onclick="appendValue('3')">3</button>
+        <button class="btn btn-op" onclick="appendOperator('+')">+</button>
+
+        <button class="btn" onclick="toggleSign()">&plusmn;</button>
+        <button class="btn" onclick="appendValue('0')">0</button>
+        <button class="btn" onclick="appendValue('.')">.</button>
+        <button class="btn btn-equal" onclick="evaluateExpr()">=</button>
+      </div>
+    </div>
+
+    <!-- Right Panel: Calculation History -->
+    <div class="drawer history-drawer collapsed" id="history-drawer">
+      <div class="drawer-inner">
+        <div class="drawer-header">
+          <h3>History</h3>
+          <button class="icon-btn close-btn" onclick="toggleHistory()" aria-label="Close panel">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="history-list" id="history-list"></div>
+        <div class="history-footer">
+          <button class="clear-history-btn" onclick="clearHistory()">Clear History</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript Business Logic -->
+  <script>
+    // State Variables
+    let expression = '';
+    let lastValidPreview = '';
+    let isDegrees = true;
+    let isInverse = false;
+    let currentTheme = 'dark';
+    let history = [];
+
+    // On Window Load
+    window.addEventListener('load', () => {
+      loadTheme();
+      loadHistory();
+      
+      // Load preference states for drawers
+      const sciOpen = localStorage.getItem('auracalc_scientific_open') === 'true';
+      const histOpen = localStorage.getItem('auracalc_history_open') === 'true';
+      
+      if (sciOpen) toggleScientific();
+      if (histOpen) toggleHistory();
+      
+      updateDisplay();
+    });
+
+    // Theme Management
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('auracalc_theme');
+      if (savedTheme) {
+        currentTheme = savedTheme;
+      } else {
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        currentTheme = prefersLight ? 'light' : 'dark';
+      }
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      updateThemeIcon();
+    }
+
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('auracalc_theme', currentTheme);
+      updateThemeIcon();
+    }
+
+    function updateThemeIcon() {
+      const iconEl = document.getElementById('theme-icon');
+      if (currentTheme === 'dark') {
+        iconEl.innerHTML = `
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        `;
+      } else {
+        iconEl.innerHTML = `
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        `;
+      }
+    }
+
+    // Toggle Panels
+    function toggleScientific() {
+      const drawer = document.getElementById('scientific-drawer');
+      const toggleBtn = document.getElementById('sci-toggle');
+      drawer.classList.toggle('collapsed');
+      toggleBtn.classList.toggle('active');
+      
+      const isOpen = !drawer.classList.contains('collapsed');
+      localStorage.setItem('auracalc_scientific_open', isOpen);
+    }
+
+    function toggleHistory() {
+      const drawer = document.getElementById('history-drawer');
+      const toggleBtn = document.getElementById('history-toggle');
+      drawer.classList.toggle('collapsed');
+      toggleBtn.classList.toggle('active');
+      
+      const isOpen = !drawer.classList.contains('collapsed');
+      localStorage.setItem('auracalc_history_open', isOpen);
+    }
+
+    // Angle Mode Toggle
+    function toggleAngleMode() {
+      isDegrees = !isDegrees;
+      const btn = document.getElementById('angle-mode-btn');
+      btn.textContent = isDegrees ? 'DEG' : 'RAD';
+      
+      const indicator = document.getElementById('angle-indicator');
+      indicator.textContent = isDegrees ? 'DEG' : 'RAD';
+      indicator.style.opacity = isDegrees ? '0.6' : '1';
+      
+      updateDisplay();
+    }
+
+    // Scientific Inverse Toggle
+    function toggleInverse() {
+      isInverse = !isInverse;
+      const invBtn = document.getElementById('inv-btn');
+      invBtn.classList.toggle('active', isInverse);
+      
+      const sciFuncs = document.querySelectorAll('.sci-func');
+      sciFuncs.forEach(btn => {
+        const invLabel = btn.getAttribute('data-inv-label');
+        const normalLabel = btn.getAttribute('data-normal-label');
+        btn.innerHTML = isInverse ? invLabel : normalLabel;
+      });
+    }
+
+    // Scientific Button Handler
+    function handleSciFunc(btn) {
+      const val = isInverse ? btn.getAttribute('data-inv-val') : btn.getAttribute('data-val');
+      appendValue(val);
+    }
+
+    // Input Appends
+    function appendValue(val) {
+      // Prevent consecutive decimal points in same number
+      if (val === '.') {
+        const parts = expression.split(/[\+\-\&\times\;\&\divide\;\^\(\)]/);
+        const lastPart = parts[parts.length - 1];
+        if (lastPart.includes('.')) return;
+      }
+      
+      expression += val;
+      updateDisplay();
+    }
+
+    function appendOperator(op) {
+      if (expression === '' && op !== '-') return;
+      
+      const lastChar = expression.trim().slice(-1);
+      const operators = ['+', '-', '&times;', '&divide;', '×', '÷', '^'];
+      
+      if (operators.includes(lastChar)) {
+        expression = expression.trim().slice(0, -1) + op;
+      } else {
+        if (op === '^') {
+          expression += op;
+        } else {
+          expression += ' ' + op + ' ';
+        }
+      }
+      updateDisplay();
+    }
+
+    // Sign Negation Toggle (&plusmn;)
+    function toggleSign() {
+      if (expression === '' || expression === '0') {
+        expression = '-';
+        updateDisplay();
+        return;
+      }
+      
+      const match = expression.match(/(\(-?\d+(\.\d+)?\)|-?\d+(\.\d+)?)$/);
+      if (match) {
+        let lastNumStr = match[0];
+        let remaining = expression.slice(0, -lastNumStr.length);
+        
+        if (lastNumStr.startsWith('(-') && lastNumStr.endsWith(')')) {
+          let val = lastNumStr.slice(2, -1);
+          expression = remaining + val;
+        } else if (lastNumStr.startsWith('-')) {
+          let val = lastNumStr.slice(1);
+          expression = remaining + val;
+        } else {
+          if (remaining === '') {
+            expression = '-' + lastNumStr;
+          } else {
+            expression = remaining + '(-' + lastNumStr + ')';
+          }
+        }
+      } else {
+        expression += '-';
+      }
+      updateDisplay();
+    }
+
+    // Clears and Deletes
+    function clearAll() {
+      expression = '';
+      lastValidPreview = '';
+      updateDisplay();
+    }
+
+    function backspace() {
+      let expr = expression.trim();
+      
+      const functions = [
+        'asin(', 'acos(', 'atan(', 'sin(', 'cos(', 'tan(', 
+        'log(', 'ln(', 'sqrt(', 'e^(', '10^(', 'fact('
+      ];
+      
+      let deleted = false;
+      for (let fn of functions) {
+        if (expr.endsWith(fn)) {
+          expression = expr.slice(0, -fn.length);
+          deleted = true;
+          break;
+        }
+      }
+      
+      if (!deleted) {
+        expression = expression.slice(0, -1);
+        if (expression.endsWith(' ')) {
+          expression = expression.slice(0, -1);
+        }
+      }
+      
+      updateDisplay();
+    }
+
+    // Core Display Renderer
+    function updateDisplay(isFinal = false) {
+      const displayExprEl = document.getElementById('display-expr');
+      const displayMainEl = document.getElementById('display-main');
+      
+      displayExprEl.textContent = expression || '0';
+      
+      if (isFinal) {
+        displayMainEl.textContent = expression;
+        displayMainEl.classList.remove('preview');
+        adjustFontSize();
+        return;
+      }
+      
+      if (expression === '') {
+        displayMainEl.textContent = '0';
+        displayMainEl.classList.remove('preview');
+        lastValidPreview = '';
+        adjustFontSize();
+        return;
+      }
+      
+      try {
+        let cleanExpr = expression.trim();
+        const operators = ['+', '-', '×', '÷', '^', '*', '/'];
+        while (operators.includes(cleanExpr.slice(-1))) {
+          cleanExpr = cleanExpr.slice(0, -1).trim();
+        }
+        
+        const trailingFuncs = /(sin\(|cos\(|tan\(|asin\(|acos\(|atan\(|log\(|ln\(|sqrt\(|fact\(|e\^\(|10\^\()$/;
+        cleanExpr = cleanExpr.replace(trailingFuncs, '').trim();
+        
+        if (cleanExpr === '') {
+          displayMainEl.textContent = lastValidPreview || '0';
+          displayMainEl.classList.add('preview');
+        } else {
+          let evalResult = safeEval(cleanExpr);
+          if (typeof evalResult === 'number' && !isNaN(evalResult) && isFinite(evalResult)) {
+            let formatted = formatResult(evalResult);
+            displayMainEl.textContent = formatted;
+            displayMainEl.classList.add('preview');
+            lastValidPreview = formatted;
+          } else {
+            displayMainEl.textContent = lastValidPreview || '0';
+            displayMainEl.classList.add('preview');
+          }
+        }
+      } catch (e) {
+        displayMainEl.textContent = lastValidPreview || '0';
+        displayMainEl.classList.add('preview');
+      }
+      
+      adjustFontSize();
+    }
+
+    // Dynamic Font Resizing to prevent display overflow
+    function adjustFontSize() {
+      const displayMainEl = document.getElementById('display-main');
+      let textLength = displayMainEl.textContent.length;
+      
+      let fontSize = 3.2; // rem
+      if (textLength > 7) {
+        fontSize = 3.2 - (textLength - 7) * 0.2;
+        if (fontSize < 1.6) fontSize = 1.6;
+      }
+      displayMainEl.style.fontSize = fontSize + 'rem';
+    }
+
+    // Safe Math Compiler / Evaluation Function
+    function safeEval(exprStr) {
+      // Pre-process visual entities to standard math symbols
+      let parsed = exprStr
+        .replace(/×/g, '*')
+        .replace(/&times;/g, '*')
+        .replace(/÷/g, '/')
+        .replace(/&divide;/g, '/')
+        .replace(/π/g, 'Math.PI')
+        .replace(/&pi;/g, 'Math.PI')
+        .replace(/e/g, 'Math.E')
+        .replace(/\^/g, '**')
+        .replace(/%/g, '*0.01');
+
+      // Evaluator with specific local mathematical function scopes
+      const evalFn = new Function('isDegrees', `
+        const sin = (x) => isDegrees ? Math.sin(x * Math.PI / 180) : Math.sin(x);
+        const cos = (x) => isDegrees ? Math.cos(x * Math.PI / 180) : Math.cos(x);
+        const tan = (x) => isDegrees ? Math.tan(x * Math.PI / 180) : Math.tan(x);
+        const asin = (x) => isDegrees ? Math.asin(x) * 180 / Math.PI : Math.asin(x);
+        const acos = (x) => isDegrees ? Math.acos(x) * 180 / Math.PI : Math.acos(x);
+        const atan = (x) => isDegrees ? Math.atan(x) * 180 / Math.PI : Math.atan(x);
+        const log = (x) => Math.log10(x);
+        const ln = (x) => Math.log(x);
+        const sqrt = (x) => Math.sqrt(x);
+        const rand = () => Math.random();
+        const fact = (n) => {
+          if (n < 0) return NaN;
+          if (n === 0 || n === 1) return 1;
+          let result = 1;
+          for (let i = 2; i <= n; i++) result *= i;
+          return result;
+        };
+        return ${parsed};
+      `);
+      
+      return evalFn(isDegrees);
+    }
+
+    // Floating Point & Error Formatting
+    function formatResult(value) {
+      if (isNaN(value)) return 'Error';
+      if (!isFinite(value)) return 'Infinity';
+      
+      let str = value.toString();
+      if (str.includes('.')) {
+        let val = parseFloat(value.toFixed(10));
+        return val.toString();
+      }
+      return str;
+    }
+
+    // Trigger Final Evaluation
+    function evaluateExpr() {
+      if (expression === '') return;
+      
+      try {
+        let evalResult = safeEval(expression);
+        if (typeof evalResult === 'number' && !isNaN(evalResult)) {
+          let formatted = formatResult(evalResult);
+          
+          addToHistory(expression, formatted);
+          
+          expression = formatted;
+          updateDisplay(true); // show final result non-dimmed
+        } else {
+          showError();
+        }
+      } catch (e) {
+        showError();
+      }
+    }
+
+    function showError() {
+      const displayMainEl = document.getElementById('display-main');
+      displayMainEl.textContent = 'Error';
+      displayMainEl.classList.remove('preview');
+      displayMainEl.classList.add('error-flash');
+      setTimeout(() => {
+        displayMainEl.classList.remove('error-flash');
+      }, 500);
+    }
+
+    // Persistent Calculation History Logic
+    function loadHistory() {
+      const saved = localStorage.getItem('auracalc_history');
+      if (saved) {
+        history = JSON.parse(saved);
+        renderHistory();
+      } else {
+        renderHistory();
+      }
+    }
+
+    function addToHistory(expr, res) {
+      if (history.length > 0 && history[0].expr === expr && history[0].res === res) {
+        return;
+      }
+      history.unshift({ expr, res, id: Date.now() });
+      if (history.length > 50) {
+        history.pop();
+      }
+      localStorage.setItem('auracalc_history', JSON.stringify(history));
+      renderHistory();
+    }
+
+    function deleteHistoryItem(id, event) {
+      event.stopPropagation();
+      history = history.filter(item => item.id !== id);
+      localStorage.setItem('auracalc_history', JSON.stringify(history));
+      renderHistory();
+    }
+
+    function clearHistory() {
+      history = [];
+      localStorage.removeItem('auracalc_history');
+      renderHistory();
+    }
+
+    function useHistoryItem(expr) {
+      expression = expr;
+      updateDisplay();
+    }
+
+    function renderHistory() {
+      const listEl = document.getElementById('history-list');
+      listEl.innerHTML = '';
+      
+      if (history.length === 0) {
+        listEl.innerHTML = `
+          <div class="empty-history">
+            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--text-muted)" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+            <p>No recent calculations</p>
+          </div>
+        `;
+        return;
+      }
+      
+      history.forEach(item => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'history-item';
+        itemEl.onclick = () => useHistoryItem(item.expr);
+        
+        itemEl.innerHTML = `
+          <div class="history-item-expr">${item.expr}</div>
+          <div class="history-item-res">= ${item.res}</div>
+          <button class="delete-item-btn" onclick="deleteHistoryItem(${item.id}, event)" title="Remove from history">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        `;
+        listEl.appendChild(itemEl);
+      });
+    }
+
+    // Keyboard Access Mapping
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      
+      const key = e.key;
+      if (key >= '0' && key <= '9') {
+        appendValue(key);
+      } else if (key === '.') {
+        appendValue('.');
+      } else if (key === '+') {
+        appendOperator('+');
+      } else if (key === '-') {
+        appendOperator('-');
+      } else if (key === '*') {
+        appendOperator('&times;');
+      } else if (key === '/') {
+        appendOperator('&divide;');
+      } else if (key === '%') {
+        appendValue('%');
+      } else if (key === '^') {
+        appendValue('^');
+      } else if (key === '(' || key === ')') {
+        appendValue(key);
+      } else if (key === 'Enter' || key === '=') {
+        e.preventDefault();
+        evaluateExpr();
+      } else if (key === 'Backspace') {
+        backspace();
+      } else if (key === 'Escape') {
+        clearAll();
+      }
+    });
+  </script>
+</body>
+</html>
